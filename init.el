@@ -17,8 +17,6 @@
 	(insert-file-contents "~/.emacs.d/logo.txt")
 	(buffer-string)))
 
-;; hide magit warnings up to 1.4.0
-(setq magit-last-seen-setup-instructions "1.4.0")
 
 
 ;;
@@ -36,50 +34,63 @@
 ;; -- package management --
 ;;
 
-;; list of packages to download
-(setf *package-list*
-  '(clojure-mode
-    cider
-    gitignore-mode
-    magit
-    markdown-mode
-    paredit
-    python-mode))
+(require 'package)
+;(setq package-enable-at-startup nil)
 
-;; list of packages to require
-(setf *package-require-list*
-  *package-list*)
+(setf package-archives
+  '(("gnu"       . "http://elpa.gnu.org/packages/")
+    ("melpa"     . "http://melpa.org/packages/")
+    ("marmalade" . "http://marmalade-repo.org/packages/")))
 
+(package-initialize)
 
+;; bootstrap `use-package'
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
-;; load package management system (Emacs 24+ only)
-(when (>= emacs-major-version 24)
-  ;; load package
-  (require 'package)
+(require 'use-package)
 
-  ;; define package repository locations
-  (setf package-archives
-    '(("gnu"       . "http://elpa.gnu.org/packages/")
-      ("melpa"     . "http://melpa.org/packages/")
-      ("marmalade" . "http://marmalade-repo.org/packages/")))
+(use-package pabbrev
+  :ensure t)
 
-  ;; initialize packages
-  (package-initialize)
+(use-package tex-site
+  :ensure auctex)
 
-  ;; download repository information if not present
-  (unless (and (file-exists-p "~/.emacs.d/elpa/archives/gnu")
-	       (file-exists-p "~/.emacs.d/elpa/archives/melpa")
-	       (file-exists-p "~/.emacs.d/elpa/archives/marmalade"))
-    (package-refresh-contents))
+(use-package clojure-mode
+  :ensure t)
 
-  ;; install packages
-  (dolist (package *package-list*)
-    (unless (package-installed-p package)
-      (package-install package)))
+(use-package cider
+  :ensure t)
 
-  ;; require packages
-  (dolist (package *package-require-list*)
-    (require package)))
+(use-package gitignore-mode
+  :ensure t)
+
+(use-package magit
+  :ensure t
+  :config
+  ;; hide magit warnings up to 1.4.0
+  (setq magit-last-seen-setup-instructions "1.4.0"))
+
+(use-package markdown-mode
+  :ensure t)
+
+(use-package paredit
+  :ensure t
+  :init
+  (autoload 'enable-paredit-mode "paredit"
+    "Turn on pseudo-structural editing of Lisp code." t)
+  (dolist (hook '(emacs-lisp-mode-hook
+		  eval-expression-minibuffer-setup-hook
+		  ielm-mode-hook
+		  lisp-mode-hook
+		  lisp-interaction-mode-hook
+		  scheme-mode-hook))
+    (add-hook hook #'enable-paredit-mode)))
+
+(use-package python-mode
+  :ensure t)
+
 
 
 ;;
@@ -88,20 +99,3 @@
 
 ; makes scrolling past the end of a page jump to the next page
 (setf doc-view-continuous t)
-
-
-;;
-;; -- paredit mode --
-;;
-
-(autoload 'enable-paredit-mode
-  "paredit"
-  "Turn on pseudo-structural editing of Lisp code."
-  t)
-(dolist (hook '(emacs-lisp-mode-hook
-		eval-expression-minibuffer-setup-hook
-		ielm-mode-hook
-		lisp-mode-hook
-		lisp-interaction-mode-hook
-		scheme-mode-hook))
-  (add-hook hook #'enable-paredit-mode))
