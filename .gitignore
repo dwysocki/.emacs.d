@@ -1,0 +1,7 @@
+# personal information
+tramp
+auto-save-list/
+elpa/
+
+# emacs autosave
+*~
