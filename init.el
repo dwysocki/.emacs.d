@@ -28,6 +28,9 @@
 ;; hide toolbar
 (tool-bar-mode -1)
 
+;; hide scrollbar
+(scroll-bar-mode -1)
+
 ;; display line and column numbers
 (line-number-mode)
 (column-number-mode)
@@ -37,15 +40,14 @@
 ;; -- package management --
 ;;
 
+;; bootstrap `package'
 (require 'package)
-;(setq package-enable-at-startup nil)
-
 (setf package-archives
   '(("gnu"       . "http://elpa.gnu.org/packages/")
     ("melpa"     . "http://melpa.org/packages/")
     ("marmalade" . "http://marmalade-repo.org/packages/")))
-
 (package-initialize)
+
 
 ;; bootstrap `use-package'
 (unless (package-installed-p 'use-package)
@@ -92,8 +94,18 @@
     (add-hook hook #'enable-paredit-mode)))
 
 (use-package python-mode
-  :ensure t)
+  :ensure t
+  :init
+  (add-hook 'python-mode-hook
+    (lambda () (whitespace-mode t))))
 
+
+;; load local files
+(add-to-list 'custom-theme-load-path
+             (expand-file-name "~/.emacs.d/themes/"))
+
+;; load theme
+(load-theme 'base16-eighties-dark t)
 
 
 ;;
@@ -118,5 +130,17 @@
 
 ;; whitespace-mode
 (require 'whitespace)
+
 (setq whitespace-style '(face empty tabs lines-tail trailing))
-(global-whitespace-mode t)
+
+(defun enable-whitespace-mode ()
+  (whitespace-mode t))
+
+;; enable whitespace-mode only in certain modes
+(dolist (hook '(c-mode-hook
+                clojure-mode-hook
+                java-mode-hook
+                lisp-mode-hook
+                lisp-interaction-mode-hook
+                python-mode-hook))
+  (add-hook hook #'enable-whitespace-mode))
