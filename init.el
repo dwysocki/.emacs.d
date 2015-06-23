@@ -25,11 +25,14 @@
 ;; hide menu bar
 (menu-bar-mode -1)
 
-;; hide toolbar
-(tool-bar-mode -1)
 
-;; hide scrollbar
-(scroll-bar-mode -1)
+(when window-system
+  ;; hide toolbar
+  (tool-bar-mode -1)
+
+  ;; hide scrollbar
+  (scroll-bar-mode -1))
+
 
 ;; display line and column numbers
 (line-number-mode)
@@ -78,7 +81,14 @@
   (setq magit-last-seen-setup-instructions "1.4.0"))
 
 (use-package markdown-mode
-  :ensure t)
+  :ensure t
+  :init
+  (add-hook 'markdown-mode-hook
+    (lambda ()
+      (define-key markdown-mode-map
+        (kbd "C-c C-c C-c") 'Rmarkdown-compile-silent)
+      (define-key markdown-mode-map
+        (kbd "C-c C-c C-v") 'Rmarkdown-compile-verbose))))
 
 (use-package paredit
   :ensure t
@@ -144,3 +154,56 @@
                 lisp-interaction-mode-hook
                 python-mode-hook))
   (add-hook hook #'enable-whitespace-mode))
+
+
+;;
+;; -- OS X specific --
+;;
+
+(when (eq system-type 'darwin)
+  (setf ispell-program-name "/usr/local/bin/ispell")
+  (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin:/Library/TeX/texbin/"))
+  (setf exec-path (append exec-path '("/usr/local/bin" "/Library/TeX/texbin/"))))
+
+;;
+;; -- keybindings --
+;;
+
+(global-set-key (kbd "C-;")
+  'other-window)
+(global-set-key (kbd "C-:")
+  'prev-window)
+(global-set-key (kbd "C-x 4 4")
+  'split-window-4-way)
+
+(defun prev-window ()
+  (interactive)
+  (other-window -1))
+
+(defun split-window-4-way ()
+  (interactive)
+  (let ((starting-window (selected-window)))
+    (split-window-below)
+    (split-window-right)
+    (other-window 1)
+    (other-window 1)
+    (split-window-right)
+    (balance-windows)
+    ;; return to initial window
+    (select-window starting-window)))
+
+;;
+;; -- Rmarkdown
+;;
+
+(defun Rmarkdown-compile-silent ()
+  (interactive)
+  (shell-command
+    (format "echo 'rmarkdown::render(\"%s\", \"all\")' | R --no-save --silent > /dev/null"
+            (buffer-file-name))))
+
+(defun Rmarkdown-compile-verbose ()
+  (interactive)
+  (shell-command
+    (format "echo 'rmarkdown::render(\"%s\", \"all\")' | R --no-save --silent"
+            (buffer-file-name))))
