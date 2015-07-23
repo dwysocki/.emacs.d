@@ -25,13 +25,13 @@
 ;; hide menu bar
 (menu-bar-mode -1)
 
+;; hide toolbar
+(and (boundp 'tool-bar-mode)
+     (tool-bar-mode -1))
 
-(when window-system
-  ;; hide toolbar
-  (tool-bar-mode -1)
-
-  ;; hide scrollbar
-  (scroll-bar-mode -1))
+;; hide scrollbar
+(and (boundp 'scroll-bar-mode)
+     (scroll-bar-mode -1))
 
 
 ;; display line and column numbers
