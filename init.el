@@ -185,8 +185,7 @@
   (let ((starting-window (selected-window)))
     (split-window-below)
     (split-window-right)
-    (other-window 1)
-    (other-window 1)
+    (other-window 2)
     (split-window-right)
     (balance-windows)
     ;; return to initial window
