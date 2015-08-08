@@ -52,7 +52,15 @@
 ;; split the focused window into 4
 (global-set-key (kbd "C-x 4 4")
   'split-window-4-way)
-
+;; open Magit status menu
+(global-set-key (kbd "C-c m")
+  'magit-status)
+;; replace all instances of the provided string
+(global-set-key (kbd "C-c C-r")
+  'replace-string)
+;; replace all instances of the provided regexp
+(global-set-key (kbd "C-c M-r")
+  'replace-regexp)
 
 
 ;;
