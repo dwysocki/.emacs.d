@@ -40,6 +40,22 @@
 
 
 ;;
+;; -- global keybindings --
+;;
+
+;; switch focus to the next window
+(global-set-key (kbd "C-;")
+  'other-window)
+;; switch focus to the previous window
+(global-set-key (kbd "C-:")
+  'prev-window)
+;; split the focused window into 4
+(global-set-key (kbd "C-x 4 4")
+  'split-window-4-way)
+
+
+
+;;
 ;; -- package management --
 ;;
 
@@ -62,40 +78,51 @@
 (use-package pabbrev
   :ensure t)
 
+;; load AucTeX
 (use-package tex-site
   :ensure auctex)
 
+;; load clojure mode, for hacking at clojure code
 (use-package clojure-mode
   :ensure t)
 
+;; load cider, for interactive clojure hacking
 (use-package cider
   :ensure t)
 
+;; load gitignore mode, for editing .gitignore files
 (use-package gitignore-mode
   :ensure t)
 
+;; load magit, the Emacs TUI for Git
 (use-package magit
   :ensure t
   :config
   ;; hide magit warnings up to 1.4.0
   (setq magit-last-seen-setup-instructions "1.4.0"))
 
+;; load markdown mode
 (use-package markdown-mode
   :ensure t
   :init
   (add-hook 'markdown-mode-hook
     (lambda ()
+      ;; add keyboard shortcuts for compiling
       (define-key markdown-mode-map
         (kbd "C-c C-c C-c") 'Rmarkdown-compile-silent)
       (define-key markdown-mode-map
         (kbd "C-c C-c C-v") 'Rmarkdown-compile-verbose))))
 
+;; load paredit mode, which keeps parentheses balanced, and allows for easy
+;; manipulation of S-expressions
 (use-package paredit
   :ensure t
   :init
   (autoload 'enable-paredit-mode "paredit"
     "Turn on pseudo-structural editing of Lisp code." t)
-  (dolist (hook '(emacs-lisp-mode-hook
+  ;; add hook for all lisp dialect modes
+  (dolist (hook '(clojure-mode-hook
+                  emacs-lisp-mode-hook
                   eval-expression-minibuffer-setup-hook
                   ielm-mode-hook
                   lisp-mode-hook
@@ -103,11 +130,13 @@
                   scheme-mode-hook))
     (add-hook hook #'enable-paredit-mode)))
 
+;; load python mode, for hacking at python code
 (use-package python-mode
   :ensure t
   :init
   (add-hook 'python-mode-hook
-    (lambda () (whitespace-mode t))))
+    ;; turn on whitespace-mode
+    #'enable-whitespace-mode))
 
 
 ;; load local files
@@ -141,9 +170,11 @@
 ;; whitespace-mode
 (require 'whitespace)
 
+;; set up options for whitespace mode
 (setq whitespace-style '(face empty tabs lines-tail trailing))
 
 (defun enable-whitespace-mode ()
+  "Enables whitespace-mode."
   (whitespace-mode t))
 
 ;; enable whitespace-mode only in certain modes
@@ -156,38 +187,29 @@
   (add-hook hook #'enable-whitespace-mode))
 
 
-;;
-;; -- OS X specific --
-;;
 
-(when (eq system-type 'darwin)
-  (setf ispell-program-name "/usr/local/bin/ispell")
-  (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin:/Library/TeX/texbin/"))
-  (setf exec-path (append exec-path '("/usr/local/bin" "/Library/TeX/texbin/"))))
 
-;;
-;; -- keybindings --
-;;
-
-(global-set-key (kbd "C-;")
-  'other-window)
-(global-set-key (kbd "C-:")
-  'prev-window)
-(global-set-key (kbd "C-x 4 4")
-  'split-window-4-way)
-
-(defun prev-window ()
+(defun prev-window (&optional (count 1))
+  "Switches focus to the previous window. Opposite of `other-window'."
   (interactive)
-  (other-window -1))
+  (other-window (- count)))
 
 (defun split-window-4-way ()
+  "Splits the current window into 4."
   (interactive)
-  (let ((starting-window (selected-window)))
+  (let (;; remember the window we started at, so we can return to it
+        (starting-window (selected-window)))
+    ;; split the original window into top & bottom halves
     (split-window-below)
+    ;; split the top half into a left & right half
     (split-window-right)
+    ;; switch focus to the bottom half
     (other-window 2)
+    ;; split the bottom half into a left & right half
+    ;; we have now split the initial window into 4
     (split-window-right)
-    (balance-windows)
+    ;; ensure that the 4 windows are the same size
+    (balance-windows starting-window)
     ;; return to initial window
     (select-window starting-window)))
 
@@ -196,13 +218,36 @@
 ;;
 
 (defun Rmarkdown-compile-silent ()
+  "Compile file being visited with Rmarkdown, suppressing its output."
   (interactive)
   (shell-command
-    (format "echo 'rmarkdown::render(\"%s\", \"all\")' | R --no-save --silent > /dev/null"
+    (format (concat "echo 'rmarkdown::render(\"%s\", \"all\")'"
+                    "|"
+                    "R --no-save --silent > /dev/null")
             (buffer-file-name))))
 
 (defun Rmarkdown-compile-verbose ()
+  "Compile file being visited with Rmarkdown, writing its output to the
+   minibuffer."
   (interactive)
   (shell-command
-    (format "echo 'rmarkdown::render(\"%s\", \"all\")' | R --no-save --silent"
+    (format (concat "echo 'rmarkdown::render(\"%s\", \"all\")'"
+                    "|"
+                    "R --no-save --silent")
             (buffer-file-name))))
+
+;;
+;; -- OS X specific --
+;;
+
+(when (eq system-type 'darwin)
+  ;; provide the path to ispell
+  (setf ispell-program-name "/usr/local/bin/ispell")
+  ;; add TeXbin to the PATH environment variable
+  (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin:/Library/TeX/texbin/"))
+  ;; add /usr/local/bin and /Library/TeX/texbin to the exec-path variable
+  (setf exec-path (append exec-path '("/usr/local/bin" "/Library/TeX/texbin/"))))
+
+
+
+
