@@ -52,6 +52,10 @@
 ;; split the focused window into 4
 (global-set-key (kbd "C-x 4 4")
   'split-window-4-way)
+;; save a link for inserting in org-mode
+(define-key global-map "\C-c l" 'org-store-link)
+;; open the org-mode global agenda
+(define-key global-map "\C-c a" 'org-agenda)
 ;; open Magit status menu
 (global-set-key (kbd "C-c m")
   'magit-status)
@@ -82,6 +86,14 @@
   (package-install 'use-package))
 
 (require 'use-package)
+
+;; set up org-mode
+(use-package org
+  :ensure t
+  :init
+  (setf org-log-done t)
+  (setf org-agenda-files
+        (file-expand-wildcards "~/org/*.org")))
 
 (use-package pabbrev
   :ensure t)
@@ -221,8 +233,37 @@
     ;; return to initial window
     (select-window starting-window)))
 
+
 ;;
-;; -- Rmarkdown
+;; -- Terminals --
+;;
+
+(defmacro make-term-command (program)
+  "Defines a function which calls ansi-term with the given program name,
+  and names the buffer *<program>-term*."
+  (let* ((program-term (concat program "-term"))
+         (fn-name (intern program-term)))
+    `(defun ,fn-name ()
+       "Docstring goes here..."
+       (interactive)
+       (ansi-term ,program ,program-term))))
+
+;; IPython terminal
+(make-term-command "ipython")
+(global-set-key (kbd "C-c M-f p") 'ipython-term)
+;; Maxima terminal
+(make-term-command "maxima")
+(global-set-key (kbd "C-c M-f m") 'maxima-term)
+;; R terminal
+(make-term-command "R")
+(global-set-key (kbd "C-c M-f r") 'R-term)
+;; SBCL terminal
+(make-term-command "sbcl")
+(global-set-key (kbd "C-c M-f s") 'sbcl-term)
+
+
+;;
+;; -- Rmarkdown --
 ;;
 
 (defun Rmarkdown-compile-silent ()
@@ -255,7 +296,3 @@
   (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin:/Library/TeX/texbin/"))
   ;; add /usr/local/bin and /Library/TeX/texbin to the exec-path variable
   (setf exec-path (append exec-path '("/usr/local/bin" "/Library/TeX/texbin/"))))
-
-
-
-
