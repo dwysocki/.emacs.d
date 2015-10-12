@@ -248,6 +248,9 @@
        (interactive)
        (ansi-term ,program ,program-term))))
 
+;; Bash terminal
+(make-term-command "bash")
+(global-set-key (kbd "C-c M-f b") 'bash-term)
 ;; IPython terminal
 (make-term-command "ipython")
 (global-set-key (kbd "C-c M-f p") 'ipython-term)
