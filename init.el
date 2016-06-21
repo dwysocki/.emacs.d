@@ -158,6 +158,14 @@
     ;; turn on whitespace-mode
     #'enable-whitespace-mode))
 
+;; load ESS, for hacking at R and those other stats languages I don't use
+(use-package ess
+  :ensure t)
+
+;; load JSON mode, for improved syntax highlighting of JSON
+(use-package json-mode
+  :ensure t)
+
 
 ;; load local files
 (add-to-list 'custom-theme-load-path
