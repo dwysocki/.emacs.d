@@ -216,9 +216,10 @@
 
 
 
-(defun prev-window (&optional (count 1))
+(defun prev-window (&optional count)
   "Switches focus to the previous window. Opposite of `other-window'."
   (interactive)
+  (unless count (setq count 1))
   (other-window (- count)))
 
 (defun split-window-4-way ()
