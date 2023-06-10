@@ -97,6 +97,14 @@
 (use-package pabbrev
   :ensure t)
 
+;; load Avy
+(use-package avy
+  :ensure t
+  :bind (("C-'" . avy-goto-char)
+         ("M-g f" . avy-goto-line)
+         ("M-g w" . avy-goto-word-1)
+         ("M-g e" . avy-goto-word-0)))
+
 ;; load AucTeX
 (use-package tex-site
   :ensure auctex)
@@ -110,8 +118,17 @@
   :ensure t)
 
 ;; load gitignore mode, for editing .gitignore files
-(use-package gitignore-mode
+(use-package git-modes
   :ensure t)
+
+(use-package go-mode
+  :ensure t
+  :init
+  (add-hook 'go-mode-hook
+            (lambda ()
+              (add-hook 'before-save-hook 'gofmt-before-save)
+              (setq tab-width 4)
+              (setq indent-tabs-mode 1))))
 
 ;; load magit, the Emacs TUI for Git
 (use-package magit
@@ -125,12 +142,25 @@
   :ensure t
   :init
   (add-hook 'markdown-mode-hook
-    (lambda ()
-      ;; add keyboard shortcuts for compiling
-      (define-key markdown-mode-map
-        (kbd "C-c C-c C-c") 'Rmarkdown-compile-silent)
-      (define-key markdown-mode-map
-        (kbd "C-c C-c C-v") 'Rmarkdown-compile-verbose))))
+            (lambda ()
+              ;; add keyboard shortcuts for compiling
+              (define-key markdown-mode-map
+                (kbd "C-c C-c C-c") 'Rmarkdown-compile-silent)
+              (define-key markdown-mode-map
+                (kbd "C-c C-c C-v") 'Rmarkdown-compile-verbose))))
+
+(use-package yaml-mode
+  :ensure t
+  :init
+  (add-hook 'yaml-mode-hook
+            (lambda ()
+              (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
+
+(use-package terraform-mode
+  :ensure t
+  :init
+  (custom-set-variables
+   '(terraform-indent-level 4)))
 
 ;; load paredit mode, which keeps parentheses balanced, and allows for easy
 ;; manipulation of S-expressions
@@ -165,6 +195,12 @@
 (use-package json-mode
   :ensure t)
 
+;; load Rust mode
+(use-package rust-mode
+  :ensure t
+  :init
+  (add-hook 'rust-mode-hook
+            (lambda () (setq indent-tabs-mode nil))))
 
 ;; load local files
 (add-to-list 'custom-theme-load-path
