@@ -2,7 +2,10 @@
 ;;
 ;; init.el
 
+(dolist (dirname '("utils" "languages"))
+  (add-to-list 'load-path (expand-file-name dirname user-emacs-directory)))
 
+(require 'init-utils)
 
 ;;
 ;; -- Startup --
@@ -105,30 +108,7 @@
          ("M-g w" . avy-goto-word-1)
          ("M-g e" . avy-goto-word-0)))
 
-;; load AucTeX
-(use-package tex-site
-  :ensure auctex)
-
-;; load clojure mode, for hacking at clojure code
-(use-package clojure-mode
-  :ensure t)
-
-;; load cider, for interactive clojure hacking
-(use-package cider
-  :ensure t)
-
-;; load gitignore mode, for editing .gitignore files
-(use-package git-modes
-  :ensure t)
-
-(use-package go-mode
-  :ensure t
-  :init
-  (add-hook 'go-mode-hook
-            (lambda ()
-              (add-hook 'before-save-hook 'gofmt-before-save)
-              (setq tab-width 4)
-              (setq indent-tabs-mode 1))))
+(require 'init-languages)
 
 ;; load magit, the Emacs TUI for Git
 (use-package magit
@@ -137,30 +117,6 @@
   ;; hide magit warnings up to 1.4.0
   (setq magit-last-seen-setup-instructions "1.4.0"))
 
-;; load markdown mode
-(use-package markdown-mode
-  :ensure t
-  :init
-  (add-hook 'markdown-mode-hook
-            (lambda ()
-              ;; add keyboard shortcuts for compiling
-              (define-key markdown-mode-map
-                (kbd "C-c C-c C-c") 'Rmarkdown-compile-silent)
-              (define-key markdown-mode-map
-                (kbd "C-c C-c C-v") 'Rmarkdown-compile-verbose))))
-
-(use-package yaml-mode
-  :ensure t
-  :init
-  (add-hook 'yaml-mode-hook
-            (lambda ()
-              (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
-
-(use-package terraform-mode
-  :ensure t
-  :init
-  (custom-set-variables
-   '(terraform-indent-level 4)))
 
 ;; load paredit mode, which keeps parentheses balanced, and allows for easy
 ;; manipulation of S-expressions
@@ -179,28 +135,6 @@
                   scheme-mode-hook))
     (add-hook hook #'enable-paredit-mode)))
 
-;; load python mode, for hacking at python code
-(use-package python-mode
-  :ensure t
-  :init
-  (add-hook 'python-mode-hook
-    ;; turn on whitespace-mode
-    #'enable-whitespace-mode))
-
-;; load ESS, for hacking at R and those other stats languages I don't use
-(use-package ess
-  :ensure t)
-
-;; load JSON mode, for improved syntax highlighting of JSON
-(use-package json-mode
-  :ensure t)
-
-;; load Rust mode
-(use-package rust-mode
-  :ensure t
-  :init
-  (add-hook 'rust-mode-hook
-            (lambda () (setq indent-tabs-mode nil))))
 
 ;; load local files
 (add-to-list 'custom-theme-load-path
@@ -333,6 +267,18 @@
             (buffer-file-name))))
 
 ;;
+;; -- AI --
+;;
+
+;; (use-package chatgpt
+;;   :straight (:host github :repo "joshcho/ChatGPT.el" :files ("dist" "*.el"))
+;;   :init
+;;   (require 'python)
+;;   (setq chatgpt-repo-path "~/.emacs.d/straight/repos/ChatGPT.el/")
+;;   :bind ("C-c q" . chatgpt-query))
+
+
+;;
 ;; -- OS X specific --
 ;;
 
@@ -343,3 +289,17 @@
   (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin:/Library/TeX/texbin/"))
   ;; add /usr/local/bin and /Library/TeX/texbin to the exec-path variable
   (setf exec-path (append exec-path '("/usr/local/bin" "/Library/TeX/texbin/"))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(avy terraform-mode yaml-mode use-package python-mode paredit pabbrev markdown-mode magit json-mode go-mode git-modes ess cider auctex))
+ '(terraform-indent-level 4))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
